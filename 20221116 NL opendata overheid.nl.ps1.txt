@@ -1,0 +1,28 @@
+# 20221116 NL opendata overheid.nl.ps1.txt
+
+$extractiondate = "20221116"
+#change window title
+$host.ui.RawUI.WindowTitle = "NL OVERHEID.NL metadata extraction"
+$filename = "overheid_nl_$extractiondate.json"    # saved in this file (about 5Mb)
+
+$iterations=17  #works for NL
+$limit = 1000
+$offset = $iterations*$limit
+$offset = 10000
+$json = @()  
+#https://data.overheid.nl/data/api/3/action/current_package_list_with_resources?limit=$limit&offset=$offset
+
+#https://data.overheid.nl/data/api/3/action/current_package_list_with_resources?limit=1000&offset=50000
+#https://data.overheid.nl/data/api/3/action/package_list
+
+For ($i=0; $i -lt $iterations; $i++){
+	$offset = $i*$limit
+	$url = "https://data.overheid.nl/data/api/3/action/current_package_list_with_resources?limit=$limit&offset=$offset"
+  $json += Invoke-RestMethod  -Uri $url
+}
+
+#$json.result.count #16164
+
+$json.result | ConvertTo-Json -Depth 100 -Compress | Out-File -Filepath $filename -Encoding UTF8
+
+#$json.result.resources.url.count #66004

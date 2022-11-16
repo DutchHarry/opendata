@@ -1,0 +1,43 @@
+# 20221116 US data.gov metadata extraction.ps1.txt
+$extractiondate = "20221116"    # <-- CHANGE      used in filenames
+
+#change window title
+$host.ui.RawUI.WindowTitle = "US data.gov metadata extraction"
+
+$subsetsize = 10  # this gives subset filesizes of about 100Mb
+$counterofsubset = 1
+$numberofsubset = 1 # the number of the (first) subset
+$filename = -join("US_data_gov_","$extractiondate","_","$numberofsubset",".json")
+
+$limit=1000 # works for US
+# get numer of iterations needed
+$url1 = "https://catalog.data.gov/api/3/action/package_search"
+$d = Invoke-RestMethod  -Uri $url1
+$iterations = [Math]::Ceiling($d.result.count/$limit) 
+
+# get the data
+$alldata = $null
+# loop through
+For ($i=0; $i -lt $iterations; $i++){
+  $offset = $i*$limit
+  $url = "https://catalog.data.gov/api/3/action/package_search?start=$offset&rows=$limit"
+  #$url
+  $i # display iteration
+  $data = $null
+	$data = invoke-restmethod $url
+	$alldata = $alldata + $data.result.results
+	$counterofsubset++
+	# check if safe is needed
+	If($counterofsubset -gt $subsetsize){
+		$alldata | ConvertTo-Json -Depth 100 -Compress | Out-File -Filepath $filename -Encoding UTF8
+		$alldata = $null
+    $numberofsubset++	  
+		$filename = -join("US_data_gov_","$extractiondate","_","$numberofsubset",".json")
+    $counterofsubset = 1
+	}
+}
+
+# save last bit to file
+$alldata | ConvertTo-Json -Depth 100 -Compress | Out-File -Filepath $filename -Encoding UTF8
+
+
