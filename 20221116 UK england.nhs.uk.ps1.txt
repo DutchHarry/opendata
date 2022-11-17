@@ -1,0 +1,16 @@
+# 20221116 UK england.nhs.uk.ps1.txt
+
+$extractiondate = "20221116"
+#change window title
+$host.ui.RawUI.WindowTitle = "UK england.nhs.uk metadata extraction"
+$filename = "data_england_nhs_uk_$extractiondate.json"    # saved in this file (about 5Mb)
+
+$limit = 1000
+#$url1 = "https://data.england.nhs.uk/api/3/action/package_search"
+#$d = Invoke-RestMethod  -Uri $url1
+#$d.result.count
+#$iterations = [Math]::Ceiling($d.result.count/$limit) 
+
+$url = "https://data.england.nhs.uk/api/3/action/current_package_list_with_resources?limit=1000"
+$json = Invoke-RestMethod  -Uri $url
+$json.result | ConvertTo-Json -Depth 100 -Compress | Out-File -Filepath $filename -Encoding UTF8
